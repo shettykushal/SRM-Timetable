@@ -1,4 +1,4 @@
-import type { Holiday, Semester } from "./timetable-data"
+import { DAY_ORDER_CALENDAR, type Holiday, type Semester } from "./timetable-data"
 
 export function toISO(d: Date): string {
   const y = d.getFullYear()
@@ -16,35 +16,16 @@ export function isHoliday(iso: string, holidays: Holiday[]): Holiday | undefined
   return holidays.find((h) => h.date === iso)
 }
 
-export function isWorkingDay(d: Date, sem: Semester, holidays: Holiday[]): boolean {
-  if (!sem.workingDays.includes(d.getDay())) return false
-  if (isHoliday(toISO(d), holidays)) return false
-  return true
+export function isWorkingDay(d: Date): boolean {
+  return toISO(d) in DAY_ORDER_CALENDAR
 }
 
 /**
- * Computes the day order for a given date. Day orders only advance on working
- * days: weekends and holidays are skipped and do NOT consume a day order.
- * Returns null if the date is a weekend, a holiday, or before the semester start.
+ * Returns the day order for a date directly from the SRM academic calendar.
+ * Weekends, holidays, and any non-working day return null.
  */
-export function getDayOrder(date: Date, sem: Semester, holidays: Holiday[]): number | null {
-  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  const start = parseISO(sem.startDate)
-  if (target < start) return null
-  if (!isWorkingDay(target, sem, holidays)) return null
-
-  let order = sem.startDayOrder
-  const cursor = new Date(start)
-
-  // Walk from start date to target, incrementing the order on each working day
-  // after the first.
-  while (toISO(cursor) !== toISO(target)) {
-    cursor.setDate(cursor.getDate() + 1)
-    if (isWorkingDay(cursor, sem, holidays)) {
-      order = (order % sem.totalDayOrders) + 1
-    }
-  }
-  return order
+export function getDayOrder(date: Date): number | null {
+  return DAY_ORDER_CALENDAR[toISO(date)] ?? null
 }
 
 export interface UpcomingDay {
@@ -69,7 +50,7 @@ export function getUpcomingDays(
     out.push({
       date: new Date(cursor),
       iso,
-      dayOrder: getDayOrder(cursor, sem, holidays),
+      dayOrder: getDayOrder(cursor),
       holiday: isHoliday(iso, holidays),
       isWeekend: !sem.workingDays.includes(cursor.getDay()),
     })
