@@ -37,10 +37,10 @@ export interface Semester {
 // ---- Seed configuration ---------------------------------------------------
 
 export const DEPARTMENT = {
-  college: "Vivekananda Institute of Technology",
+  college: "SRM Institute of Science & Technology",
   department: "Computer Science & Engineering",
   section: "III Year — Section A",
-  room: "Block C",
+  room: "Tech Park",
 }
 
 export const SEMESTER: Semester = {
